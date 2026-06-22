@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Buddy</title>
+<style>
+  :root {
+    --bg: #F7F6F3;
+    --surface: #FFFFFF;
+    --border: #E4E2DC;
+    --text: #1A1A18;
+    --muted: #6B6A66;
+    --accent: #4A4AE8;
+    --accent-light: #EEEEFF;
+    --success: #1D9E75;
+    --success-light: #E1F5EE;
+    --danger: #D85A30;
+    --danger-light: #FAECE7;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
+  .app { display: grid; grid-template-columns: 260px 1fr; height: 100vh; overflow: hidden; }
+  .sidebar { background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+  .main { display: flex; flex-direction: column; overflow: hidden; }
+  .sidebar-header { padding: 20px 16px 12px; border-bottom: 1px solid var(--border); }
+  .logo { font-size: 17px; font-weight: 600; color: var(--accent); }
+  .logo-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .btn-new { width: 100%; margin-top: 12px; padding: 9px; background: var(--accent); color: white; border: none; border-radius: var(--radius); font-size: 14px; cursor: pointer; font-weight: 500; }
+  .btn-new:hover { background: #3A3AD8; }
+  .lessons-list { flex: 1; overflow-y: auto; padding: 8px; }
+  .lesson-item { padding: 10px 12px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; margin-bottom: 4px; }
+  .lesson-item:hover { background: var(--bg); }
+  .lesson-item.active { background: var(--accent-light); border-color: var(--accent); }
+  .lesson-item .l-title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lesson-item .l-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .lesson-item .l-course { display: inline-block; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-size: 10px; margin-top: 4px; }
+  .empty-sidebar { text-align: center; padding: 2rem 1rem; color: var(--muted); font-size: 13px; }
+  .topbar { padding: 14px 24px; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .topbar h1 { font-size: 16px; font-weight: 600; flex: 1; }
+  .btn-delete { padding: 6px 12px; background: none; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; cursor: pointer; color: var(--muted); }
+  .btn-delete:hover { border-color: var(--danger); color: var(--danger); }
+  .tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; padding: 0 24px; }
+  .tab-btn { padding: 11px 18px; font-size: 13px; border: none; background: none; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-btn:hover:not(.active) { color: var(--text); }
+  .content { flex: 1; overflow-y: auto; padding: 24px; }
+  .welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; color: var(--muted); }
+  .welcome .icon { font-size: 48px; margin-bottom: 16px; }
+  .welcome h2 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+
+  /* Form */
+  .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; max-width: 720px; }
+  .form-card h2 { font-size: 16px; font-weight: 600; margin-bottom: 20px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12px; font-weight: 500; color: var(--muted); }
+  input[type=text], select, textarea { padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: var(--bg); color: var(--text); width: 100%; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); background: white; }
+  textarea { min-height: 180px; resize: vertical; line-height: 1.7; }
+
+  /* File upload zone */
+  .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 24px; text-align: center; cursor: pointer; transition: all .2s; margin-bottom: 8px; background: var(--bg); }
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--accent); background: var(--accent-light); }
+  .upload-zone .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-zone p { font-size: 13px; color: var(--muted); }
+  .upload-zone strong { color: var(--accent); }
+  .upload-zone input[type=file] { display: none; }
+  .file-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--success-light); border: 1px solid var(--success); color: #0a5a3f; border-radius: 6px; padding: 5px 12px; font-size: 13px; margin-bottom: 8px; }
+  .file-badge button { background: none; border: none; cursor: pointer; color: #0a5a3f; font-size: 16px; line-height: 1; padding: 0; }
+  .or-divider { display: flex; align-items: center; gap: 10px; margin: 12px 0; color: var(--muted); font-size: 12px; }
+  .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .form-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
+  .actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+  .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: 500; border: 1px solid var(--border); background: var(--surface); color: var(--text); display: flex; align-items: center; gap: 6px; }
+  .btn:hover { background: var(--bg); }
+  .btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .btn.primary:hover { background: #3A3AD8; }
+  .btn.secondary { background: none; border-color: var(--accent); color: var(--accent); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .spinner-inline { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin .6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .char-hint { font-size: 11px; color: var(--muted); text-align: left; margin-top: 3px; }
+
+  /* Summary */
+  .summary-body { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; max-width: 720px; white-space: pre-wrap; font-size: 14px; line-height: 1.9; }
+  .section-actions { display: flex; gap: 10px; margin-bottom: 16px; max-width: 720px; }
+
+  /* Quiz */
+  .quiz-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; max-width: 720px; }
+  .quiz-controls { display: flex; align-items: center; gap: 10px; }
+  .score-pill { background: var(--accent-light); color: var(--accent); font-size: 13px; font-weight: 600; padding: 6px 16px; border-radius: 20px; }
+  .q-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 14px; max-width: 720px; }
+  .q-num { font-size: 11px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+  .q-text { font-size: 15px; font-weight: 500; margin-bottom: 14px; line-height: 1.5; }
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .opt-btn { text-align: right; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); font-size: 13px; cursor: pointer; transition: all .15s; width: 100%; }
+  .opt-btn:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-light); }
+  .opt-btn.correct { background: var(--success-light); border-color: var(--success); color: #0a5a3f; font-weight: 500; }
+  .opt-btn.wrong { background: var(--danger-light); border-color: var(--danger); color: #7a2010; }
+  .opt-btn:disabled { cursor: default; }
+  .explanation { font-size: 12px; color: var(--muted); background: var(--bg); border-radius: 6px; padding: 10px 12px; margin-top: 12px; line-height: 1.6; display: none; }
+  .quiz-gen-form { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; max-width: 720px; margin-bottom: 20px; display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+  .quiz-gen-form .field { flex: 1; min-width: 120px; }
+
+  /* Chat */
+  .chat-wrap { display: flex; flex-direction: column; height: 100%; max-width: 720px; }
+  .chat-messages { flex: 1; overflow-y: auto; padding-bottom: 16px; }
+  .msg { margin-bottom: 16px; }
+  .msg .bubble { display: inline-block; max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
+  .msg.user { text-align: left; }
+  .msg.user .bubble { background: var(--accent); color: white; border-radius: 12px 12px 4px 12px; }
+  .msg.bot .bubble { background: var(--surface); border: 1px solid var(--border); border-radius: 12px 12px 12px 4px; }
+  .msg .time { font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .chat-input-wrap { border-top: 1px solid var(--border); padding-top: 14px; display: flex; gap: 10px; flex-shrink: 0; }
+  .chat-input-wrap input { flex: 1; }
+  .chat-empty { text-align: center; padding: 2rem; color: var(--muted); font-size: 13px; }
+  .chat-empty span { font-size: 28px; display: block; margin-bottom: 8px; }
+
+  .loading-bar { height: 2px; background: var(--accent); position: fixed; top: 0; left: 0; right: 0; animation: loadbar 1.2s ease-in-out infinite; display: none; z-index: 100; }
+  @keyframes loadbar { 0%{transform:scaleX(0);transform-origin:right} 50%{transform:scaleX(1);transform-origin:right} 51%{transform-origin:left} 100%{transform:scaleX(0);transform-origin:left} }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--text); color: white; padding: 10px 20px; border-radius: 8px; font-size: 13px; display: none; z-index: 200; }
+  .no-quiz { text-align: center; padding: 2rem; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="loading-bar" id="loading-bar"></div>
+<div class="toast" id="toast"></div>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">📚 Study Buddy</div>
+      <div class="logo-sub">כלי לימוד חכם</div>
+      <button class="btn-new" onclick="showNewLesson()">+ שיעור חדש</button>
+    </div>
+    <div class="lessons-list" id="lessons-list">
+      <div class="empty-sidebar">לחצי על "+ שיעור חדש" כדי להתחיל</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar" id="topbar" style="display:none">
+      <div style="flex:1">
+        <div style="font-size:16px;font-weight:600" id="lesson-title-display"></div>
+        <div style="font-size:12px;color:var(--muted)" id="lesson-meta-display"></div>
+      </div>
+      <button class="btn-delete" onclick="deleteLesson()">🗑 מחק</button>
+    </div>
+
+    <div class="tabs" id="tabs" style="display:none">
+      <button class="tab-btn active" onclick="switchTab('summary')" id="t-summary">📄 סיכום</button>
+      <button class="tab-btn" onclick="switchTab('quiz')" id="t-quiz">🎯 מבחן</button>
+      <button class="tab-btn" onclick="switchTab('chat')" id="t-chat">💬 שאל שאלה</button>
+    </div>
+
+    <div class="content" id="content">
+      <div class="welcome">
+        <div class="icon">📖</div>
+        <h2>ברוכה הבאה ל-Study Buddy</h2>
+        <p>העלי קובץ או הדבקי טקסט — וקבלי סיכום ומבחן תוך שניות</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentLesson = null;
+let quizAnswered = {};
+let uploadedText = null;
+let uploadedFilenames = [];
+let quizGenerating = false;
+
+loadSidebar();
+
+async function loadSidebar() {
+  const res = await fetch('/api/lessons');
+  const lessons = await res.json();
+  const el = document.getElementById('lessons-list');
+  if (!lessons.length) { el.innerHTML = '<div class="empty-sidebar">לחצי על "+ שיעור חדש" כדי להתחיל</div>'; return; }
+  el.innerHTML = lessons.reverse().map(l => `
+    <div class="lesson-item ${currentLesson?.id === l.id ? 'active' : ''}" onclick="openLesson('${l.id}')">
+      <div class="l-title">${esc(l.title)}</div>
+      <div class="l-meta">${l.date}</div>
+      <div class="l-course">${esc(l.course)}</div>
+    </div>`).join('');
+}
+
+function showNewLesson() {
+  currentLesson = null;
+  uploadedText = null;
+  document.getElementById('topbar').style.display = 'none';
+  document.getElementById('tabs').style.display = 'none';
+  document.getElementById('content').innerHTML = `
+    <div class="form-card">
+      <h2>שיעור חדש</h2>
+      <div class="form-row">
+        <div class="field"><label>שם השיעור</label><input type="text" id="f-title" placeholder="למשל: מדינה ופוליטיקה — שיעור 3"></div>
+        <div class="field"><label>קורס</label><input type="text" id="f-course" placeholder="למשל: מדע המדינה"></div>
+      </div>
+
+      <div class="field"><label>העלי קבצים (PDF, Word, TXT) — ניתן לבחור כמה קבצים</label></div>
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="handleDrop(event)">
+        <input type="file" id="file-input" accept=".pdf,.docx,.txt" multiple onchange="handleFiles(this.files)">
+        <div class="upload-icon">📂</div>
+        <p><strong>לחצי כאן להעלאת קבצים</strong> או גרירה לכאן</p>
+        <p>PDF · Word · TXT · ניתן לבחור כמה קבצים בבת אחת</p>
+      </div>
+      <div id="file-badge-wrap"></div>
+
+      <div class="or-divider">או הדביקי טקסט ישירות</div>
+
+      <div class="field">
+        <textarea id="f-text" placeholder="הדבקי כאן את הסיכומים, הערות, מצגות..." oninput="updateChar()"></textarea>
+        <div class="char-hint" id="char-hint">0 תווים</div>
+      </div>
+
+      <div class="form-options">
+        <div class="field"><label>סוג סיכום</label>
+          <select id="f-stype">
+            <option value="מפורט ומסודר">מפורט ומסודר</option>
+            <option value="נקודות מפתח">נקודות מפתח</option>
+            <option value="מינימליסטי">מינימליסטי</option>
+          </select>
+        </div>
+        <div class="field"><label>מספר שאלות</label>
+          <select id="f-qcount">
+            <option value="5">5 שאלות</option>
+            <option value="8">8 שאלות</option>
+            <option value="10" selected>10 שאלות</option>
+            <option value="15">15 שאלות</option>
+          </select>
+        </div>
+        <div class="field"><label>רמת קושי</label>
+          <select id="f-diff">
+            <option value="קל">קל</option>
+            <option value="בינוני" selected>בינוני</option>
+            <option value="מאתגר">מאתגר</option>
+          </select>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" onclick="submitNew()" id="btn-submit">✨ צור סיכום ומבחן</button>
+      </div>
+    </div>`;
+}
+
+function updateChar() {
+  const v = document.getElementById('f-text')?.value.length || 0;
+  const el = document.getElementById('char-hint');
+  if (el) el.textContent = v + ' תווים';
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag');
+  if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+}
+
+async function handleFiles(fileList) {
+  if (!fileList || fileList.length === 0) return;
+  const formData = new FormData();
+  for (const file of fileList) formData.append('files', file);
+  setLoading(true);
+  try {
+    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (data.error) { toast(data.error); return; }
+    uploadedText = data.text;
+    uploadedFilenames = data.filenames;
+    const badges = data.filenames.map(name =>
+      `<span class="file-badge">✅ ${esc(name)}</span>`).join('');
+    const warn = data.errors?.length
+      ? `<div style="font-size:12px;color:var(--danger);margin-top:4px">${data.errors.map(esc).join('<br>')}</div>` : '';
+    document.getElementById('file-badge-wrap').innerHTML = `
+      <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:4px">
+        ${badges}
+        <button style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:12px" onclick="clearFile()">× נקה הכל</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted)">${uploadedText.length.toLocaleString()} תווים סה"כ</div>
+      ${warn}`;
+    document.getElementById('f-text').value = '';
+    document.getElementById('char-hint').textContent = '';
+  } catch(e) {
+    toast('שגיאה בקריאת הקבצים');
+  } finally {
+    setLoading(false);
+  }
+}
+
+function clearFile() {
+  uploadedText = null;
+  uploadedFilenames = [];
+  document.getElementById('file-badge-wrap').innerHTML = '';
+  document.getElementById('file-input').value = '';
+}
+
+async function submitNew() {
+  const title = document.getElementById('f-title').value.trim() || 'שיעור ללא שם';
+  const course = document.getElementById('f-course').value.trim() || 'כללי';
+  const manualText = document.getElementById('f-text').value.trim();
+  const text = uploadedText || manualText;
+  const stype = document.getElementById('f-stype').value;
+  const qcount = document.getElementById('f-qcount').value;
+  const diff = document.getElementById('f-diff').value;
+
+  if (!text || text.length < 50) { toast('אנא העלי קובץ או הדביקי טקסט (לפחות 50 תווים)'); return; }
+
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner-inline"></div> מכין סיכום...';
+  setLoading(true);
+
+  let lessonId = null;
+  try {
+    const res = await fetch('/api/generate/summary', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ text, title, course, summary_type: stype, filenames: uploadedFilenames })
+    });
+    const data = await res.json();
+    if (data.error) { toast(data.error); btn.disabled = false; btn.textContent = '✨ צור סיכום ומבחן'; return; }
+    lessonId = data.lesson_id;
+
+    // Show summary immediately
+    await loadSidebar();
+    await openLesson(lessonId);
+  } catch(e) {
+    toast('שגיאה — בדקי את ה-API key');
+    btn.disabled = false;
+    btn.textContent = '✨ צור סיכום ומבחן';
+    return;
+  } finally {
+    setLoading(false);
+  }
+
+  // Generate quiz in background — do not block the UI
+  quizGenerating = true;
+  if (document.getElementById('t-quiz')?.classList.contains('active')) renderQuiz();
+
+  try {
+    const qres = await fetch('/api/generate/quiz', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ lesson_id: lessonId, q_count: qcount, difficulty: diff })
+    });
+    const quiz = await qres.json();
+    quizGenerating = false;
+    if (!quiz.error && currentLesson?.id === lessonId) {
+      currentLesson.quiz = quiz;
+      if (document.getElementById('t-quiz')?.classList.contains('active')) renderQuiz();
+    }
+  } catch(e) {
+    quizGenerating = false;
+  }
+}
+
+async function openLesson(id) {
+  const res = await fetch(`/api/lessons/${id}`);
+  currentLesson = await res.json();
+  quizAnswered = {};
+  document.getElementById('topbar').style.display = 'flex';
+  document.getElementById('tabs').style.display = 'flex';
+  document.getElementById('lesson-title-display').textContent = currentLesson.title;
+  document.getElementById('lesson-meta-display').textContent = currentLesson.course + ' · ' + currentLesson.date;
+  loadSidebar();
+  switchTab('summary');
+}
+
+function switchTab(tab) {
+  ['summary','quiz','chat'].forEach(t => {
+    document.getElementById('t-'+t)?.classList.toggle('active', t===tab);
+  });
+  if (tab === 'summary') renderSummary();
+  if (tab === 'quiz') renderQuiz();
+  if (tab === 'chat') renderChat();
+}
+
+function renderSummary() {
+  document.getElementById('content').innerHTML = `
+    <div class="summary-body">${esc(currentLesson.summary)}</div>`;
+}
+
+function renderQuiz() {
+  let html = '';
+
+  // Controls to regenerate quiz
+  html += `<div class="quiz-gen-form">
+    <div class="field"><label>מספר שאלות</label>
+      <select id="rq-count"><option value="5">5</option><option value="8">8</option><option value="10" selected>10</option><option value="15">15</option></select>
+    </div>
+    <div class="field"><label>רמת קושי</label>
+      <select id="rq-diff"><option value="קל">קל</option><option value="בינוני" selected>בינוני</option><option value="מאתגר">מאתגר</option></select>
+    </div>
+    <button class="btn secondary" onclick="regenerateQuiz()" id="regen-btn">🔄 צור מבחן חדש</button>
+  </div>`;
+
+  if (!currentLesson.quiz) {
+    html += quizGenerating
+      ? `<div class="no-quiz" style="display:flex;flex-direction:column;align-items:center;gap:12px">
+           <div class="spinner-inline" style="width:22px;height:22px;border-color:rgba(74,74,232,0.3);border-top-color:var(--accent)"></div>
+           <span>מכין מבחן... זה יקח עד דקה</span>
+         </div>`
+      : '<div class="no-quiz">אין מבחן עדיין — לחצי על "צור מבחן חדש"</div>';
+    document.getElementById('content').innerHTML = html;
+    return;
+  }
+
+  const qs = currentLesson.quiz.questions;
+  let correct = Object.entries(quizAnswered).filter(([qi,oi]) => parseInt(oi) === qs[qi].correct).length;
+
+  html += `<div class="quiz-header"><span style="font-size:15px;font-weight:600">${qs.length} שאלות</span>
+    <div class="quiz-controls">
+      <span class="score-pill" id="score-pill">${correct} / ${qs.length} נכון</span>
+      <button class="btn" onclick="resetQuiz()">🔁 נסי שוב</button>
+    </div>
+  </div>`;
+
+  qs.forEach((q, i) => {
+    html += `<div class="q-card"><div class="q-num">שאלה ${i+1}</div><div class="q-text">${esc(q.q)}</div><div class="options">`;
+    q.options.forEach((opt, j) => {
+      let cls = '';
+      if (quizAnswered[i] !== undefined) {
+        if (j === q.correct) cls = 'correct';
+        else if (j === quizAnswered[i] && j !== q.correct) cls = 'wrong';
+      }
+      html += `<button class="opt-btn ${cls}" ${quizAnswered[i]!==undefined?'disabled':''} onclick="answerQ(${i},${j})">${esc(opt)}</button>`;
+    });
+    html += `</div><div class="explanation" style="${quizAnswered[i]!==undefined?'display:block':''}">${esc(q.explanation)}</div></div>`;
+  });
+
+  document.getElementById('content').innerHTML = html;
+}
+
+async function regenerateQuiz() {
+  const count = document.getElementById('rq-count').value;
+  const diff = document.getElementById('rq-diff').value;
+  const btn = document.getElementById('regen-btn');
+  btn.disabled = true;
+  btn.textContent = 'מכין...';
+  setLoading(true);
+  try {
+    const res = await fetch('/api/generate/quiz', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ lesson_id: currentLesson.id, q_count: count, difficulty: diff })
+    });
+    const quiz = await res.json();
+    currentLesson.quiz = quiz;
+    quizAnswered = {};
+    renderQuiz();
+  } catch(e) { toast('שגיאה'); }
+  finally { setLoading(false); }
+}
+
+function answerQ(qi, oi) {
+  quizAnswered[qi] = oi;
+  renderQuiz();
+}
+
+function resetQuiz() { quizAnswered = {}; renderQuiz(); }
+
+function renderChat() {
+  const history = currentLesson?.chat_history || [];
+  let msgs = history.length ? history.map(h => `
+    <div class="msg user"><div class="bubble">${esc(h.q)}</div><div class="time">${h.time}</div></div>
+    <div class="msg bot"><div class="bubble">${esc(h.a)}</div></div>`).join('') :
+    `<div class="chat-empty"><span>💬</span>שאלי כל שאלה על חומר השיעור<br>אענה רק על בסיס מה שהעלית</div>`;
+
+  document.getElementById('content').innerHTML = `
+    <div class="chat-wrap">
+      <div class="chat-messages" id="chat-msgs">${msgs}</div>
+      <div class="chat-input-wrap">
+        <input type="text" id="chat-input" placeholder="למשל: מה ההבדל בין X ל-Y?" onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="btn primary" onclick="sendChat()" id="chat-btn">שלח</button>
+      </div>
+    </div>`;
+  const el = document.getElementById('chat-msgs');
+  if (el) el.scrollTop = el.scrollHeight;
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const q = input?.value.trim();
+  if (!q || !currentLesson) return;
+  input.value = '';
+  const btn = document.getElementById('chat-btn');
+  btn.disabled = true;
+  btn.textContent = '...';
+  const msgs = document.getElementById('chat-msgs');
+  msgs.innerHTML += `<div class="msg user"><div class="bubble">${esc(q)}</div></div>`;
+  msgs.innerHTML += `<div class="msg bot" id="thinking"><div class="bubble" style="color:var(--muted)">חושב...</div></div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ lesson_id: currentLesson.id, question: q })
+    });
+    const data = await res.json();
+    document.getElementById('thinking').remove();
+    msgs.innerHTML += `<div class="msg bot"><div class="bubble">${esc(data.answer)}</div></div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+    currentLesson.chat_history = currentLesson.chat_history || [];
+    currentLesson.chat_history.push({ q, a: data.answer, time: new Date().toLocaleTimeString('he',{hour:'2-digit',minute:'2-digit'}) });
+  } catch(e) {
+    document.getElementById('thinking').remove();
+    msgs.innerHTML += `<div class="msg bot"><div class="bubble" style="color:var(--muted)">שגיאה, נסי שוב</div></div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'שלח';
+  }
+}
+
+async function deleteLesson() {
+  if (!currentLesson || !confirm('למחוק את השיעור הזה?')) return;
+  await fetch(`/api/lessons/${currentLesson.id}`, { method: 'DELETE' });
+  currentLesson = null;
+  document.getElementById('topbar').style.display = 'none';
+  document.getElementById('tabs').style.display = 'none';
+  document.getElementById('content').innerHTML = '<div class="welcome"><div class="icon">📖</div><h2>שיעור נמחק</h2><p>לחצי על "+ שיעור חדש" כדי להמשיך</p></div>';
+  loadSidebar();
+}
+
+function setLoading(on) { document.getElementById('loading-bar').style.display = on ? 'block' : 'none'; }
+function toast(msg) { const el = document.getElementById('toast'); el.textContent = msg; el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 3500); }
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+</script>
+</body>
+</html>
