@@ -4,125 +4,525 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Study Buddy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #F7F6F3;
-    --surface: #FFFFFF;
-    --border: #E4E2DC;
-    --text: #1A1A18;
-    --muted: #6B6A66;
-    --accent: #4A4AE8;
-    --accent-light: #EEEEFF;
-    --success: #1D9E75;
-    --success-light: #E1F5EE;
-    --danger: #D85A30;
-    --danger-light: #FAECE7;
-    --radius: 10px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
-  .app { display: grid; grid-template-columns: 260px 1fr; height: 100vh; overflow: hidden; }
-  .sidebar { background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
-  .main { display: flex; flex-direction: column; overflow: hidden; }
-  .sidebar-header { padding: 20px 16px 12px; border-bottom: 1px solid var(--border); }
-  .logo { font-size: 17px; font-weight: 600; color: var(--accent); }
-  .logo-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .btn-new { width: 100%; margin-top: 12px; padding: 9px; background: var(--accent); color: white; border: none; border-radius: var(--radius); font-size: 14px; cursor: pointer; font-weight: 500; }
-  .btn-new:hover { background: #3A3AD8; }
-  .lessons-list { flex: 1; overflow-y: auto; padding: 8px; }
-  .lesson-item { padding: 10px 12px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; margin-bottom: 4px; }
-  .lesson-item:hover { background: var(--bg); }
-  .lesson-item.active { background: var(--accent-light); border-color: var(--accent); }
-  .lesson-item .l-title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .lesson-item .l-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .lesson-item .l-course { display: inline-block; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-size: 10px; margin-top: 4px; }
-  .empty-sidebar { text-align: center; padding: 2rem 1rem; color: var(--muted); font-size: 13px; }
-  .topbar { padding: 14px 24px; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-  .topbar h1 { font-size: 16px; font-weight: 600; flex: 1; }
-  .btn-delete { padding: 6px 12px; background: none; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; cursor: pointer; color: var(--muted); }
-  .btn-delete:hover { border-color: var(--danger); color: var(--danger); }
-  .tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; padding: 0 24px; }
-  .tab-btn { padding: 11px 18px; font-size: 13px; border: none; background: none; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; }
-  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .tab-btn:hover:not(.active) { color: var(--text); }
-  .content { flex: 1; overflow-y: auto; padding: 24px; }
-  .welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; color: var(--muted); }
-  .welcome .icon { font-size: 48px; margin-bottom: 16px; }
-  .welcome h2 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+:root {
+  --sidebar-bg: #151C2C;
+  --sidebar-border: #1F2A3F;
+  --sidebar-hover: #1C2438;
+  --sidebar-active: #243050;
+  --sidebar-text: #DDD8CF;
+  --sidebar-muted: #5E6880;
 
-  /* Form */
-  .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; max-width: 720px; }
-  .form-card h2 { font-size: 16px; font-weight: 600; margin-bottom: 20px; }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-  .field { display: flex; flex-direction: column; gap: 5px; }
-  .field label { font-size: 12px; font-weight: 500; color: var(--muted); }
-  input[type=text], select, textarea { padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: var(--bg); color: var(--text); width: 100%; }
-  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); background: white; }
-  textarea { min-height: 180px; resize: vertical; line-height: 1.7; }
+  --bg: #F7F3EC;
+  --surface: #FDFBF8;
+  --border: #E6DFD3;
+  --text: #1C1916;
+  --muted: #7A7268;
 
-  /* File upload zone */
-  .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 24px; text-align: center; cursor: pointer; transition: all .2s; margin-bottom: 8px; background: var(--bg); }
-  .upload-zone:hover, .upload-zone.drag { border-color: var(--accent); background: var(--accent-light); }
-  .upload-zone .upload-icon { font-size: 28px; margin-bottom: 8px; }
-  .upload-zone p { font-size: 13px; color: var(--muted); }
-  .upload-zone strong { color: var(--accent); }
-  .upload-zone input[type=file] { display: none; }
-  .file-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--success-light); border: 1px solid var(--success); color: #0a5a3f; border-radius: 6px; padding: 5px 12px; font-size: 13px; margin-bottom: 8px; }
-  .file-badge button { background: none; border: none; cursor: pointer; color: #0a5a3f; font-size: 16px; line-height: 1; padding: 0; }
-  .or-divider { display: flex; align-items: center; gap: 10px; margin: 12px 0; color: var(--muted); font-size: 12px; }
-  .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  --accent: #C97A28;
+  --accent-deep: #A86320;
+  --accent-light: #FBF1E4;
+  --accent-glow: rgba(201,122,40,0.15);
 
-  .form-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
-  .actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
-  .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: 500; border: 1px solid var(--border); background: var(--surface); color: var(--text); display: flex; align-items: center; gap: 6px; }
-  .btn:hover { background: var(--bg); }
-  .btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
-  .btn.primary:hover { background: #3A3AD8; }
-  .btn.secondary { background: none; border-color: var(--accent); color: var(--accent); }
-  .btn:disabled { opacity: .4; cursor: not-allowed; }
-  .spinner-inline { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin .6s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .char-hint { font-size: 11px; color: var(--muted); text-align: left; margin-top: 3px; }
+  --success: #287A55;
+  --success-light: #EBF5EF;
+  --success-border: #8ECBAC;
+  --danger: #B84030;
+  --danger-light: #FAE9E6;
+  --danger-border: #DDA090;
 
-  /* Summary */
-  .summary-body { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; max-width: 720px; white-space: pre-wrap; font-size: 14px; line-height: 1.9; }
-  .section-actions { display: flex; gap: 10px; margin-bottom: 16px; max-width: 720px; }
+  --radius: 11px;
+  --shadow-xs: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.09), 0 1px 4px rgba(0,0,0,0.05);
+}
 
-  /* Quiz */
-  .quiz-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; max-width: 720px; }
-  .quiz-controls { display: flex; align-items: center; gap: 10px; }
-  .score-pill { background: var(--accent-light); color: var(--accent); font-size: 13px; font-weight: 600; padding: 6px 16px; border-radius: 20px; }
-  .q-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 14px; max-width: 720px; }
-  .q-num { font-size: 11px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
-  .q-text { font-size: 15px; font-weight: 500; margin-bottom: 14px; line-height: 1.5; }
-  .options { display: flex; flex-direction: column; gap: 8px; }
-  .opt-btn { text-align: right; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); font-size: 13px; cursor: pointer; transition: all .15s; width: 100%; }
-  .opt-btn:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-light); }
-  .opt-btn.correct { background: var(--success-light); border-color: var(--success); color: #0a5a3f; font-weight: 500; }
-  .opt-btn.wrong { background: var(--danger-light); border-color: var(--danger); color: #7a2010; }
-  .opt-btn:disabled { cursor: default; }
-  .explanation { font-size: 12px; color: var(--muted); background: var(--bg); border-radius: 6px; padding: 10px 12px; margin-top: 12px; line-height: 1.6; display: none; }
-  .quiz-gen-form { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; max-width: 720px; margin-bottom: 20px; display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
-  .quiz-gen-form .field { flex: 1; min-width: 120px; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* Chat */
-  .chat-wrap { display: flex; flex-direction: column; height: 100%; max-width: 720px; }
-  .chat-messages { flex: 1; overflow-y: auto; padding-bottom: 16px; }
-  .msg { margin-bottom: 16px; }
-  .msg .bubble { display: inline-block; max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
-  .msg.user { text-align: left; }
-  .msg.user .bubble { background: var(--accent); color: white; border-radius: 12px 12px 4px 12px; }
-  .msg.bot .bubble { background: var(--surface); border: 1px solid var(--border); border-radius: 12px 12px 12px 4px; }
-  .msg .time { font-size: 10px; color: var(--muted); margin-top: 4px; }
-  .chat-input-wrap { border-top: 1px solid var(--border); padding-top: 14px; display: flex; gap: 10px; flex-shrink: 0; }
-  .chat-input-wrap input { flex: 1; }
-  .chat-empty { text-align: center; padding: 2rem; color: var(--muted); font-size: 13px; }
-  .chat-empty span { font-size: 28px; display: block; margin-bottom: 8px; }
+body {
+  font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14.5px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
 
-  .loading-bar { height: 2px; background: var(--accent); position: fixed; top: 0; left: 0; right: 0; animation: loadbar 1.2s ease-in-out infinite; display: none; z-index: 100; }
-  @keyframes loadbar { 0%{transform:scaleX(0);transform-origin:right} 50%{transform:scaleX(1);transform-origin:right} 51%{transform-origin:left} 100%{transform:scaleX(0);transform-origin:left} }
-  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--text); color: white; padding: 10px 20px; border-radius: 8px; font-size: 13px; display: none; z-index: 200; }
-  .no-quiz { text-align: center; padding: 2rem; color: var(--muted); font-size: 14px; }
+/* ── Layout ── */
+.app { display: grid; grid-template-columns: 268px 1fr; height: 100vh; overflow: hidden; }
+
+/* ── Sidebar ── */
+.sidebar {
+  background: var(--sidebar-bg);
+  border-left: 1px solid var(--sidebar-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 22px 16px 14px;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+
+.logo-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 3px;
+}
+
+.logo-mark {
+  width: 34px; height: 34px;
+  background: linear-gradient(145deg, #D4872E, #B86A1A);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  box-shadow: 0 2px 10px rgba(201,122,40,0.45);
+  flex-shrink: 0;
+}
+
+.logo-name {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--sidebar-text);
+  letter-spacing: -0.2px;
+}
+
+.logo-sub {
+  font-size: 11px;
+  color: var(--sidebar-muted);
+  margin-right: 44px;
+  letter-spacing: 0.4px;
+}
+
+.btn-new {
+  width: 100%;
+  margin-top: 14px;
+  padding: 9px 16px;
+  background: linear-gradient(135deg, #C97A28, #B06518);
+  color: #FDF5EB;
+  border: none;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 0.1px;
+  box-shadow: 0 2px 8px rgba(201,122,40,0.4);
+  transition: all 0.18s;
+}
+.btn-new:hover {
+  background: linear-gradient(135deg, #B86818, #9A5610);
+  box-shadow: 0 4px 14px rgba(201,122,40,0.5);
+  transform: translateY(-1px);
+}
+.btn-new:active { transform: translateY(0); }
+
+.lessons-list { flex: 1; overflow-y: auto; padding: 8px; }
+.lessons-list::-webkit-scrollbar { width: 3px; }
+.lessons-list::-webkit-scrollbar-thumb { background: var(--sidebar-border); border-radius: 2px; }
+
+.lesson-item {
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  margin-bottom: 2px;
+  transition: all 0.15s;
+}
+.lesson-item:hover { background: var(--sidebar-hover); }
+.lesson-item.active { background: var(--sidebar-active); border-color: rgba(201,122,40,0.25); }
+
+.l-title { font-size: 12.5px; font-weight: 500; color: var(--sidebar-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.l-meta { font-size: 10.5px; color: var(--sidebar-muted); margin-top: 2px; }
+.l-course {
+  display: inline-block;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 4px;
+  padding: 1px 7px;
+  font-size: 10px;
+  color: var(--sidebar-muted);
+  margin-top: 5px;
+}
+
+.empty-sidebar { text-align: center; padding: 2.5rem 1rem; color: var(--sidebar-muted); font-size: 13px; line-height: 1.7; }
+
+/* ── Main ── */
+.main { display: flex; flex-direction: column; overflow: hidden; }
+
+.topbar {
+  padding: 0 26px;
+  height: 58px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-xs);
+}
+.topbar-info { flex: 1; min-width: 0; }
+#lesson-title-display { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#lesson-meta-display { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+
+.btn-delete {
+  padding: 6px 13px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--muted);
+  font-family: inherit;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.btn-delete:hover { border-color: var(--danger-border); color: var(--danger); background: var(--danger-light); }
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+  padding: 0 26px;
+}
+.tab-btn {
+  padding: 12px 20px;
+  font-size: 13px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-weight: 500;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-btn:hover:not(.active) { color: var(--text); }
+
+.content { flex: 1; overflow-y: auto; padding: 28px; }
+.content::-webkit-scrollbar { width: 5px; }
+.content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── Welcome ── */
+.welcome {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; height: 100%; text-align: center;
+}
+.welcome-icon { font-size: 54px; margin-bottom: 20px; }
+.welcome h2 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 22px; font-weight: 500;
+  color: var(--text); margin-bottom: 10px; letter-spacing: -0.3px;
+}
+.welcome p { font-size: 14px; color: var(--muted); max-width: 280px; line-height: 1.65; }
+
+/* ── Form ── */
+.form-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 30px;
+  max-width: 740px;
+  box-shadow: var(--shadow-sm);
+}
+.form-card h2 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 19px; font-weight: 500;
+  margin-bottom: 22px; letter-spacing: -0.3px;
+}
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label {
+  font-size: 11px; font-weight: 600; color: var(--muted);
+  letter-spacing: 0.6px; text-transform: uppercase;
+}
+
+input[type=text], select, textarea {
+  padding: 9px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--text);
+  width: 100%;
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: white;
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+textarea { min-height: 160px; resize: vertical; line-height: 1.7; }
+
+/* Upload */
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 26px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 8px;
+  background: var(--bg);
+}
+.upload-zone:hover, .upload-zone.drag {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+.upload-zone input[type=file] { display: none; }
+.upload-icon { font-size: 28px; margin-bottom: 10px; }
+.upload-zone p { font-size: 13px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+.upload-zone strong { color: var(--accent); font-weight: 500; }
+
+.file-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--success-light);
+  border: 1px solid var(--success-border);
+  color: #165535;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.or-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 14px 0; color: var(--muted); font-size: 12px; letter-spacing: 0.3px;
+}
+.or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.form-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 18px 0; }
+.actions { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+
+.char-hint { font-size: 11px; color: var(--muted); text-align: left; margin-top: 3px; }
+
+/* ── Buttons ── */
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  cursor: pointer;
+  font-weight: 500;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--bg); }
+.btn.primary {
+  background: linear-gradient(135deg, #C97A28, #B06518);
+  color: #FDF5EB;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(201,122,40,0.3);
+}
+.btn.primary:hover {
+  background: linear-gradient(135deg, #B86818, #9A5610);
+  box-shadow: 0 4px 14px rgba(201,122,40,0.42);
+  transform: translateY(-1px);
+}
+.btn.primary:active { transform: translateY(0); }
+.btn.secondary { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+.btn.secondary:hover { background: #F3E4CC; }
+.btn:disabled { opacity: 0.42; cursor: not-allowed !important; transform: none !important; }
+
+/* ── Summary ── */
+.summary-body {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 30px 34px;
+  max-width: 740px;
+  box-shadow: var(--shadow-sm);
+  font-size: 14.5px;
+  line-height: 1.85;
+}
+
+.summary-body h1 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 21px; font-weight: 600;
+  color: var(--text);
+  margin: 0 0 18px;
+  letter-spacing: -0.4px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border);
+}
+.summary-body h2 {
+  font-size: 15.5px; font-weight: 600;
+  color: var(--text);
+  margin: 26px 0 10px;
+  padding-right: 11px;
+  border-right: 3px solid var(--accent);
+}
+.summary-body h3 {
+  font-size: 14px; font-weight: 600;
+  color: var(--accent-deep);
+  margin: 18px 0 8px;
+}
+.summary-body p { margin: 0 0 10px; color: var(--text); }
+.summary-body ul { margin: 8px 0 14px; padding-right: 22px; }
+.summary-body ul li { margin-bottom: 5px; }
+.summary-body strong { font-weight: 600; }
+.summary-body em { font-style: italic; color: var(--muted); }
+
+.section-actions { display: flex; gap: 10px; margin-bottom: 18px; max-width: 740px; }
+
+/* ── Quiz ── */
+.quiz-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; max-width: 740px; }
+.quiz-controls { display: flex; align-items: center; gap: 10px; }
+
+.score-pill {
+  background: var(--accent-light);
+  border: 1px solid #EAC182;
+  color: var(--accent-deep);
+  font-size: 13px; font-weight: 600;
+  padding: 6px 16px;
+  border-radius: 20px;
+}
+
+.quiz-gen-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  max-width: 740px;
+  margin-bottom: 22px;
+  display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap;
+  box-shadow: var(--shadow-xs);
+}
+.quiz-gen-form .field { flex: 1; min-width: 110px; }
+
+.q-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 12px;
+  max-width: 740px;
+  box-shadow: var(--shadow-xs);
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.q-card:hover { box-shadow: var(--shadow-sm); }
+
+.q-num { font-size: 10.5px; font-weight: 700; color: var(--muted); margin-bottom: 8px; letter-spacing: 0.6px; text-transform: uppercase; }
+.q-text { font-size: 15px; font-weight: 500; margin-bottom: 16px; line-height: 1.5; }
+
+.options { display: flex; flex-direction: column; gap: 8px; }
+.opt-btn {
+  text-align: right;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: all 0.15s;
+  width: 100%;
+  font-family: inherit;
+  color: var(--text);
+  line-height: 1.45;
+}
+.opt-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  transform: translateX(-3px);
+}
+.opt-btn.correct { background: var(--success-light); border-color: var(--success-border); color: #13472E; font-weight: 500; }
+.opt-btn.wrong { background: var(--danger-light); border-color: var(--danger-border); color: #6B1E14; }
+.opt-btn:disabled { cursor: default; transform: none !important; }
+
+.explanation {
+  font-size: 12.5px;
+  color: var(--muted);
+  background: var(--bg);
+  border-radius: 7px;
+  padding: 10px 13px;
+  margin-top: 12px;
+  line-height: 1.65;
+  display: none;
+  border-right: 3px solid #EAC182;
+}
+
+.no-quiz { text-align: center; padding: 3rem; color: var(--muted); font-size: 14px; }
+
+/* ── Chat ── */
+.chat-wrap { display: flex; flex-direction: column; height: 100%; max-width: 740px; }
+.chat-messages { flex: 1; overflow-y: auto; padding-bottom: 16px; }
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.msg { margin-bottom: 16px; animation: msgIn 0.2s ease; }
+@keyframes msgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.msg .bubble {
+  display: inline-block; max-width: 85%;
+  padding: 10px 14px; border-radius: 14px;
+  font-size: 14px; line-height: 1.65; white-space: pre-wrap;
+}
+.msg.user { text-align: left; }
+.msg.user .bubble {
+  background: linear-gradient(135deg, #C97A28, #B06518);
+  color: #FDF5EB;
+  border-radius: 14px 14px 4px 14px;
+  box-shadow: 0 2px 8px rgba(201,122,40,0.25);
+}
+.msg.bot .bubble {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px 14px 14px 4px;
+  box-shadow: var(--shadow-xs);
+}
+.msg .time { font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+.chat-input-wrap { border-top: 1px solid var(--border); padding-top: 14px; display: flex; gap: 10px; flex-shrink: 0; }
+.chat-input-wrap input { flex: 1; }
+.chat-empty { text-align: center; padding: 3rem 1rem; color: var(--muted); font-size: 13.5px; line-height: 1.7; }
+.chat-empty span { font-size: 30px; display: block; margin-bottom: 12px; }
+
+/* ── Loading / Toast ── */
+.spinner-inline {
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-top-color: rgba(255,255,255,0.9);
+  border-radius: 50%;
+  animation: spin 0.55s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-bar {
+  height: 2px;
+  background: linear-gradient(90deg, #C97A28, #E8A840, #C97A28);
+  background-size: 200% 100%;
+  position: fixed; top: 0; left: 0; right: 0;
+  animation: barShimmer 1.4s ease infinite;
+  display: none; z-index: 100;
+}
+@keyframes barShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+.toast {
+  position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%);
+  background: #1C1916; color: #F7F3EC;
+  padding: 11px 22px; border-radius: 10px;
+  font-size: 13.5px; display: none; z-index: 200;
+  box-shadow: var(--shadow-md);
+  max-width: 360px; text-align: center; line-height: 1.5;
+}
 </style>
 </head>
 <body>
@@ -132,20 +532,23 @@
 <div class="app">
   <div class="sidebar">
     <div class="sidebar-header">
-      <div class="logo">📚 Study Buddy</div>
+      <div class="logo-row">
+        <div class="logo-mark">📚</div>
+        <div class="logo-name">Study Buddy</div>
+      </div>
       <div class="logo-sub">כלי לימוד חכם</div>
       <button class="btn-new" onclick="showNewLesson()">+ שיעור חדש</button>
     </div>
     <div class="lessons-list" id="lessons-list">
-      <div class="empty-sidebar">לחצי על "+ שיעור חדש" כדי להתחיל</div>
+      <div class="empty-sidebar">לחצי על "+ שיעור חדש"<br>כדי להתחיל</div>
     </div>
   </div>
 
   <div class="main">
     <div class="topbar" id="topbar" style="display:none">
-      <div style="flex:1">
-        <div style="font-size:16px;font-weight:600" id="lesson-title-display"></div>
-        <div style="font-size:12px;color:var(--muted)" id="lesson-meta-display"></div>
+      <div class="topbar-info">
+        <div id="lesson-title-display"></div>
+        <div id="lesson-meta-display"></div>
       </div>
       <button class="btn-delete" onclick="deleteLesson()">🗑 מחק</button>
     </div>
@@ -158,7 +561,7 @@
 
     <div class="content" id="content">
       <div class="welcome">
-        <div class="icon">📖</div>
+        <div class="welcome-icon">📖</div>
         <h2>ברוכה הבאה ל-Study Buddy</h2>
         <p>העלי קובץ או הדבקי טקסט — וקבלי סיכום ומבחן תוך שניות</p>
       </div>
@@ -179,7 +582,10 @@ async function loadSidebar() {
   const res = await fetch('/api/lessons');
   const lessons = await res.json();
   const el = document.getElementById('lessons-list');
-  if (!lessons.length) { el.innerHTML = '<div class="empty-sidebar">לחצי על "+ שיעור חדש" כדי להתחיל</div>'; return; }
+  if (!lessons.length) {
+    el.innerHTML = '<div class="empty-sidebar">לחצי על "+ שיעור חדש"<br>כדי להתחיל</div>';
+    return;
+  }
   el.innerHTML = lessons.reverse().map(l => `
     <div class="lesson-item ${currentLesson?.id === l.id ? 'active' : ''}" onclick="openLesson('${l.id}')">
       <div class="l-title">${esc(l.title)}</div>
@@ -191,6 +597,7 @@ async function loadSidebar() {
 function showNewLesson() {
   currentLesson = null;
   uploadedText = null;
+  uploadedFilenames = [];
   document.getElementById('topbar').style.display = 'none';
   document.getElementById('tabs').style.display = 'none';
   document.getElementById('content').innerHTML = `
@@ -200,8 +607,7 @@ function showNewLesson() {
         <div class="field"><label>שם השיעור</label><input type="text" id="f-title" placeholder="למשל: מדינה ופוליטיקה — שיעור 3"></div>
         <div class="field"><label>קורס</label><input type="text" id="f-course" placeholder="למשל: מדע המדינה"></div>
       </div>
-
-      <div class="field"><label>העלי קבצים (PDF, Word, TXT) — ניתן לבחור כמה קבצים</label></div>
+      <div class="field" style="margin-bottom:8px"><label>קבצים (PDF · Word · TXT) — ניתן לבחור כמה קבצים</label></div>
       <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()"
         ondragover="event.preventDefault();this.classList.add('drag')"
         ondragleave="this.classList.remove('drag')"
@@ -209,17 +615,14 @@ function showNewLesson() {
         <input type="file" id="file-input" accept=".pdf,.docx,.txt" multiple onchange="handleFiles(this.files)">
         <div class="upload-icon">📂</div>
         <p><strong>לחצי כאן להעלאת קבצים</strong> או גרירה לכאן</p>
-        <p>PDF · Word · TXT · ניתן לבחור כמה קבצים בבת אחת</p>
+        <p style="margin-top:4px">PDF · Word · TXT · כמה קבצים בבת אחת</p>
       </div>
       <div id="file-badge-wrap"></div>
-
       <div class="or-divider">או הדביקי טקסט ישירות</div>
-
       <div class="field">
-        <textarea id="f-text" placeholder="הדבקי כאן את הסיכומים, הערות, מצגות..." oninput="updateChar()"></textarea>
+        <textarea id="f-text" placeholder="הדבקי כאן סיכומים, הערות, מצגות..." oninput="updateChar()"></textarea>
         <div class="char-hint" id="char-hint">0 תווים</div>
       </div>
-
       <div class="form-options">
         <div class="field"><label>סוג סיכום</label>
           <select id="f-stype">
@@ -273,16 +676,15 @@ async function handleFiles(fileList) {
     if (data.error) { toast(data.error); return; }
     uploadedText = data.text;
     uploadedFilenames = data.filenames;
-    const badges = data.filenames.map(name =>
-      `<span class="file-badge">✅ ${esc(name)}</span>`).join('');
+    const badges = data.filenames.map(name => `<span class="file-badge">✅ ${esc(name)}</span>`).join('');
     const warn = data.errors?.length
       ? `<div style="font-size:12px;color:var(--danger);margin-top:4px">${data.errors.map(esc).join('<br>')}</div>` : '';
     document.getElementById('file-badge-wrap').innerHTML = `
-      <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:4px">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0 4px">
         ${badges}
-        <button style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:12px" onclick="clearFile()">× נקה הכל</button>
+        <button style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:12px;font-family:inherit" onclick="clearFile()">× נקה הכל</button>
       </div>
-      <div style="font-size:11px;color:var(--muted)">${uploadedText.length.toLocaleString()} תווים סה"כ</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">${uploadedText.length.toLocaleString()} תווים סה"כ</div>
       ${warn}`;
     document.getElementById('f-text').value = '';
     document.getElementById('char-hint').textContent = '';
@@ -323,22 +725,19 @@ async function submitNew() {
       body: JSON.stringify({ text, title, course, summary_type: stype, filenames: uploadedFilenames })
     });
     const data = await res.json();
-    if (data.error) { toast(data.error); btn.disabled = false; btn.textContent = '✨ צור סיכום ומבחן'; return; }
+    if (data.error) { toast(data.error); btn.disabled = false; btn.innerHTML = '✨ צור סיכום ומבחן'; return; }
     lessonId = data.lesson_id;
-
-    // Show summary immediately
     await loadSidebar();
     await openLesson(lessonId);
   } catch(e) {
     toast('שגיאה — בדקי את ה-API key');
     btn.disabled = false;
-    btn.textContent = '✨ צור סיכום ומבחן';
+    btn.innerHTML = '✨ צור סיכום ומבחן';
     return;
   } finally {
     setLoading(false);
   }
 
-  // Generate quiz in background — do not block the UI
   quizGenerating = true;
   if (document.getElementById('t-quiz')?.classList.contains('active')) renderQuiz();
 
@@ -379,16 +778,41 @@ function switchTab(tab) {
   if (tab === 'chat') renderChat();
 }
 
+/* ── Markdown renderer ── */
+function fmt(s) {
+  return esc(s)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
+}
+
+function renderMarkdown(text) {
+  const lines = text.split('\n');
+  let html = '', inList = false;
+  for (const line of lines) {
+    const t = line.trim();
+    if (!t) { if (inList) { html += '</ul>'; inList = false; } continue; }
+    if      (t.startsWith('### ')) { if (inList) { html += '</ul>'; inList = false; } html += `<h3>${fmt(t.slice(4))}</h3>`; }
+    else if (t.startsWith('## '))  { if (inList) { html += '</ul>'; inList = false; } html += `<h2>${fmt(t.slice(3))}</h2>`; }
+    else if (t.startsWith('# '))   { if (inList) { html += '</ul>'; inList = false; } html += `<h1>${fmt(t.slice(2))}</h1>`; }
+    else if (t.startsWith('- ') || t.startsWith('* ')) {
+      if (!inList) { html += '<ul>'; inList = true; }
+      html += `<li>${fmt(t.slice(2))}</li>`;
+    } else {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += `<p>${fmt(t)}</p>`;
+    }
+  }
+  if (inList) html += '</ul>';
+  return html;
+}
+
 function renderSummary() {
-  document.getElementById('content').innerHTML = `
-    <div class="summary-body">${esc(currentLesson.summary)}</div>`;
+  document.getElementById('content').innerHTML =
+    `<div class="summary-body">${renderMarkdown(currentLesson.summary)}</div>`;
 }
 
 function renderQuiz() {
-  let html = '';
-
-  // Controls to regenerate quiz
-  html += `<div class="quiz-gen-form">
+  let html = `<div class="quiz-gen-form">
     <div class="field"><label>מספר שאלות</label>
       <select id="rq-count"><option value="5">5</option><option value="8">8</option><option value="10" selected>10</option><option value="15">15</option></select>
     </div>
@@ -400,9 +824,9 @@ function renderQuiz() {
 
   if (!currentLesson.quiz) {
     html += quizGenerating
-      ? `<div class="no-quiz" style="display:flex;flex-direction:column;align-items:center;gap:12px">
-           <div class="spinner-inline" style="width:22px;height:22px;border-color:rgba(74,74,232,0.3);border-top-color:var(--accent)"></div>
-           <span>מכין מבחן... זה יקח עד דקה</span>
+      ? `<div class="no-quiz" style="display:flex;flex-direction:column;align-items:center;gap:14px">
+           <div class="spinner-inline" style="width:24px;height:24px;border-color:rgba(201,122,40,0.2);border-top-color:var(--accent)"></div>
+           <span>מכין מבחן... עד דקה</span>
          </div>`
       : '<div class="no-quiz">אין מבחן עדיין — לחצי על "צור מבחן חדש"</div>';
     document.getElementById('content').innerHTML = html;
@@ -410,17 +834,21 @@ function renderQuiz() {
   }
 
   const qs = currentLesson.quiz.questions;
-  let correct = Object.entries(quizAnswered).filter(([qi,oi]) => parseInt(oi) === qs[qi].correct).length;
+  const correct = Object.entries(quizAnswered).filter(([qi,oi]) => parseInt(oi) === qs[qi].correct).length;
 
-  html += `<div class="quiz-header"><span style="font-size:15px;font-weight:600">${qs.length} שאלות</span>
+  html += `<div class="quiz-header">
+    <span style="font-size:15px;font-weight:600">${qs.length} שאלות</span>
     <div class="quiz-controls">
-      <span class="score-pill" id="score-pill">${correct} / ${qs.length} נכון</span>
+      <span class="score-pill">${correct} / ${qs.length} נכון</span>
       <button class="btn" onclick="resetQuiz()">🔁 נסי שוב</button>
     </div>
   </div>`;
 
   qs.forEach((q, i) => {
-    html += `<div class="q-card"><div class="q-num">שאלה ${i+1}</div><div class="q-text">${esc(q.q)}</div><div class="options">`;
+    html += `<div class="q-card">
+      <div class="q-num">שאלה ${i+1}</div>
+      <div class="q-text">${esc(q.q)}</div>
+      <div class="options">`;
     q.options.forEach((opt, j) => {
       let cls = '';
       if (quizAnswered[i] !== undefined) {
@@ -429,7 +857,9 @@ function renderQuiz() {
       }
       html += `<button class="opt-btn ${cls}" ${quizAnswered[i]!==undefined?'disabled':''} onclick="answerQ(${i},${j})">${esc(opt)}</button>`;
     });
-    html += `</div><div class="explanation" style="${quizAnswered[i]!==undefined?'display:block':''}">${esc(q.explanation)}</div></div>`;
+    html += `</div>
+      <div class="explanation" style="${quizAnswered[i]!==undefined?'display:block':''}">${esc(q.explanation)}</div>
+    </div>`;
   });
 
   document.getElementById('content').innerHTML = html;
@@ -439,8 +869,7 @@ async function regenerateQuiz() {
   const count = document.getElementById('rq-count').value;
   const diff = document.getElementById('rq-diff').value;
   const btn = document.getElementById('regen-btn');
-  btn.disabled = true;
-  btn.textContent = 'מכין...';
+  btn.disabled = true; btn.textContent = 'מכין...';
   setLoading(true);
   try {
     const res = await fetch('/api/generate/quiz', {
@@ -455,19 +884,16 @@ async function regenerateQuiz() {
   finally { setLoading(false); }
 }
 
-function answerQ(qi, oi) {
-  quizAnswered[qi] = oi;
-  renderQuiz();
-}
-
+function answerQ(qi, oi) { quizAnswered[qi] = oi; renderQuiz(); }
 function resetQuiz() { quizAnswered = {}; renderQuiz(); }
 
 function renderChat() {
   const history = currentLesson?.chat_history || [];
-  let msgs = history.length ? history.map(h => `
-    <div class="msg user"><div class="bubble">${esc(h.q)}</div><div class="time">${h.time}</div></div>
-    <div class="msg bot"><div class="bubble">${esc(h.a)}</div></div>`).join('') :
-    `<div class="chat-empty"><span>💬</span>שאלי כל שאלה על חומר השיעור<br>אענה רק על בסיס מה שהעלית</div>`;
+  const msgs = history.length
+    ? history.map(h => `
+        <div class="msg user"><div class="bubble">${esc(h.q)}</div><div class="time">${h.time}</div></div>
+        <div class="msg bot"><div class="bubble">${esc(h.a)}</div></div>`).join('')
+    : `<div class="chat-empty"><span>💬</span>שאלי כל שאלה על חומר השיעור<br>אענה רק על בסיס מה שהעלית</div>`;
 
   document.getElementById('content').innerHTML = `
     <div class="chat-wrap">
@@ -487,8 +913,7 @@ async function sendChat() {
   if (!q || !currentLesson) return;
   input.value = '';
   const btn = document.getElementById('chat-btn');
-  btn.disabled = true;
-  btn.textContent = '...';
+  btn.disabled = true; btn.textContent = '...';
   const msgs = document.getElementById('chat-msgs');
   msgs.innerHTML += `<div class="msg user"><div class="bubble">${esc(q)}</div></div>`;
   msgs.innerHTML += `<div class="msg bot" id="thinking"><div class="bubble" style="color:var(--muted)">חושב...</div></div>`;
@@ -508,8 +933,7 @@ async function sendChat() {
     document.getElementById('thinking').remove();
     msgs.innerHTML += `<div class="msg bot"><div class="bubble" style="color:var(--muted)">שגיאה, נסי שוב</div></div>`;
   } finally {
-    btn.disabled = false;
-    btn.textContent = 'שלח';
+    btn.disabled = false; btn.textContent = 'שלח';
   }
 }
 
@@ -519,13 +943,18 @@ async function deleteLesson() {
   currentLesson = null;
   document.getElementById('topbar').style.display = 'none';
   document.getElementById('tabs').style.display = 'none';
-  document.getElementById('content').innerHTML = '<div class="welcome"><div class="icon">📖</div><h2>שיעור נמחק</h2><p>לחצי על "+ שיעור חדש" כדי להמשיך</p></div>';
+  document.getElementById('content').innerHTML = `
+    <div class="welcome">
+      <div class="welcome-icon">📖</div>
+      <h2>שיעור נמחק</h2>
+      <p>לחצי על "+ שיעור חדש" כדי להמשיך</p>
+    </div>`;
   loadSidebar();
 }
 
 function setLoading(on) { document.getElementById('loading-bar').style.display = on ? 'block' : 'none'; }
 function toast(msg) { const el = document.getElementById('toast'); el.textContent = msg; el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 3500); }
-function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
 </body>
 </html>
