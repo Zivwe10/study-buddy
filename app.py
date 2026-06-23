@@ -260,12 +260,18 @@ def chat():
         messages.append({"role": "assistant", "content": h["a"]})
     messages.append({"role": "user", "content": question})
 
+    # Use summary as context; fall back to truncated raw text if no summary yet
+    context = lesson.get("summary") or lesson["text"]
+    words = context.split()
+    if len(words) > 3000:
+        context = " ".join(words[:3000]) + "\n[...]"
+
     system = f"""אתה עוזר לימודי. ענה על שאלות הסטודנטית אך ורק על בסיס חומר הלימוד הבא.
 אם השאלה לא קשורה לחומר — אמור זאת בכנות.
 ענה בעברית, בצורה ברורה ומסודרת.
 
 חומר הלימוד:
-{lesson['text']}"""
+{context}"""
 
     response = client.messages.create(model="claude-opus-4-6", max_tokens=1000,
         system=system, messages=messages)
